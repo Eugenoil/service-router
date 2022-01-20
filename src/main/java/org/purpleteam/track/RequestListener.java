@@ -42,8 +42,11 @@ public class RequestListener {
         socket = serverSocket.accept();
         InputStreamReader isr = new InputStreamReader(socket.getInputStream(), StandardCharsets.UTF_8);
         BufferedReader input = new BufferedReader(isr);
-        while (!input.ready()) ;
-        return input.readLine(); //Request first line only
+        StringBuilder sb = new StringBuilder();
+        String line;
+        while ((line = input.readLine()) != null)
+            sb.append(line).append("\n");
+        return sb.toString();
     }
 
     public void sendResponse(String contents) throws IOException {
