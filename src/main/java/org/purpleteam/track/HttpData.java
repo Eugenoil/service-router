@@ -78,7 +78,8 @@ public class HttpData {
         if (!line.equals("")) {
             String[] method = line.split(" ");
             setHttpMethod(method[0]);
-            setParameters(splitRequest(method[1]));
+            if (method.length > 1)
+                setParameters(splitRequest(method[1]));
             addHeader(line);
             while (input.ready() && line != "") {
                 line = input.readLine();
