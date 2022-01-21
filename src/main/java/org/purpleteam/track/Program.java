@@ -11,9 +11,13 @@ public class Program {
         httpData.setUrl("https://api.telegram.org/bot" + botToken + "/" + apiMethod);
         httpData.addParamenets("chat_id", "754857287");
         httpData.addParamenets("text", "Can you see it?");
-//        String test = "https://api.telegram.org/bot" + botToken + "/" + apiMethod + "?chat_id=754857287&text=Can you see it?";
 
-        String test = "https://api.telegram.org/bot" + botToken + "/getUpdates?offset=1";
+//        TextMessage
+//        String test = "https://api.telegram.org/bot" + botToken + "/" + apiMethod + "?chat_id=754857287&text=Can you see it?";
+//        GetUpdates
+//        String test = "https://api.telegram.org/bot" + botToken + "/getUpdates?offset=0";
+
+        String test = "https://api.telegram.org/bot\" + botToken + \"/";
         HttpSender httpSender = new HttpSender();
         System.out.println(httpSender.sendRequest(test));
 //        HttpData httpData = new HttpData();

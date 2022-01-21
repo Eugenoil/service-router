@@ -3,11 +3,7 @@ package org.purpleteam.track;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.io.PrintWriter;
-import java.net.Socket;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.UnknownHostException;
 import java.nio.charset.StandardCharsets;
 
 public class HttpSender {
@@ -15,10 +11,6 @@ public class HttpSender {
     int port;
 
     public HttpSender() {
-    }
-
-    public HttpSender(String destUrl) {
-        this.destUrl = destUrl;
     }
 
     private HttpData doSend(HttpData httpData) throws IOException {
@@ -56,9 +48,6 @@ public class HttpSender {
         return doSend(null);
     }
 
-    public HttpData sendRequest() throws IOException {
-        return doSend(null);
-    }
         /***
          * Method to connect to any Server waiting for client connection (for ex. some destUrl) and send to it
          * HttpData. After connection method get data from server and return it as new HttpData
