@@ -1,38 +1,52 @@
 package org.purpleteam.track;
 
-import java.util.List;
-
 public class Program {
+    /***
+     * Example of creating listening server. Var <request> receive HttpData which contains
+     * Map httpData.parameters() and httpData.method() to understand what data need to put in sendResponse()
+     */
+    public static void listen() throws Exception {
+        HttpListener rs = new HttpListener();
+        System.out.println("Service listener started");
+        HttpData request;
+        while (true) {
+            request = rs.listen();
+            // some operation with request
+            // check request.parameters() and request.getMethod();
+            System.out.println(request);
+            HttpData httpData = new HttpData();
+            httpData.setBody("<p>Hello!</p>");
+            rs.sendResponse(httpData);
+        }
+    }
+
+    /***
+     * Example of sending request in form of HttpData. Parameters included in headers, not inside URL
+     */
+    public static void sendHttpData() {
+        HttpData httpData = new HttpData();
+        httpData.setUrl("localhost:8080");
+        httpData.addParamenets("trackings", "new");
+        httpData.addParamenets("id", "1");
+        httpData.addParamenets("task_name", "New task started");
+        httpData.setHttpMethod("POST");
+        System.out.println(new HttpSender().sendRequestInUrl(httpData));
+    }
+
+    /***
+     * Example of sending HttpData in URL (not headers)
+     */
+    public static void sendHttpDataInUrl() {
+        HttpData httpData = new HttpData();
+        httpData.setUrl("localhost:8080");
+        httpData.addParamenets("trackings", "list");
+        httpData.addParamenets("id", "1");
+        httpData.setHttpMethod("GET");
+        System.out.println(new HttpSender().sendRequestInUrl(httpData));
+    }
 
     public static void main(String[] args) throws Exception {
-        HttpData httpData = new HttpData();
-        String botToken = "5269050893:AAEJw-bjL80xPSZDDPZ_wQCUi4af7hyZdFo";
-        String apiMethod = "sendMessage";
-        httpData.setUrl("https://api.telegram.org/bot" + botToken + "/" + apiMethod);
-        httpData.addParamenets("chat_id", "754857287");
-        httpData.addParamenets("text", "Can you see it?");
-
-//        TextMessage
-//        String test = "https://api.telegram.org/bot" + botToken + "/" + apiMethod + "?chat_id=754857287&text=Can you see it?";
-//        GetUpdates
-//        String test = "https://api.telegram.org/bot" + botToken + "/getUpdates?offset=0";
-
-        String test = "https://api.telegram.org/bot\" + botToken + \"/";
-        HttpSender httpSender = new HttpSender();
-        System.out.println(httpSender.sendRequest(test));
-//        HttpData httpData = new HttpData();
-//        httpData.addParamenets();
-
-//        HttpListener rs = new HttpListener();
-//        System.out.println("Service listener started");
-//        HttpData request;
-//        while (true) {
-//            request = rs.listen();
-//            // some operation with request
-//            System.out.println(request);
-//            HttpData httpData = new HttpData();
-//            httpData.setBody("<p>Hello!</p>");
-//            rs.sendResponse(httpData);
-//        }
+        sendHttpData();
+//        listen();
     }
 }

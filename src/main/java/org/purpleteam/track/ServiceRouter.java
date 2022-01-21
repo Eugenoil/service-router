@@ -21,13 +21,25 @@ public class ServiceRouter {
 //    Patch
 ///trackings/{id} - обновление отдельных полей объекта
 
-//  Добавление таски
+//    Добавление таски
 //    POST /?trackings=new&id=1&task_name="New task started"
-//    Обновление таски
-//    POST /?trackings=put&id=1&task_name="New task started"
 
+//    Обновление таски
+//    POST /?trackings=put&id=1&task_name="New task started"&status=1
+
+//    Завершение таски
 //    POST /?trackings=close&id=1
 
-//  Удаление таски
+//    Удаление таски
 //    POST /?trackings=delete&id=1&task_name="New task started"
+
+//    Запрос всех тасков
+//    GET /?trackings=list
+
+//    Запрос тасков по id
+//    GET /?trackings=id&id=1
+
+//    Запрос тасков по cписку id
+//    GET /?trackings=teamlid&id=1&id=2&id=3
+
 }
