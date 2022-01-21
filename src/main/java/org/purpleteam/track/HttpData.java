@@ -2,6 +2,8 @@ package org.purpleteam.track;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 
 public class HttpData {
@@ -9,6 +11,7 @@ public class HttpData {
     private Map<String, String> parameters;
     private List<String> headers;
     private String body;
+    private String url;
 
     public HttpData() {
         this.parameters = new HashMap<String, String>();
@@ -42,6 +45,12 @@ public class HttpData {
         this.parameters = parameters;
     }
 
+    public void addParamenets(String key, String value) {
+        key = URLEncoder.encode(key, StandardCharsets.UTF_8);
+        value = URLEncoder.encode(value, StandardCharsets.UTF_8);
+        this.parameters.put(key, value);
+    }
+
     public String getHttpMethod() {
         return httpMethod;
     }
@@ -50,6 +59,20 @@ public class HttpData {
         this.httpMethod = httpMethod;
     }
 
+    public String getUrl() {
+        return url;
+    }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    /***
+     * Read data from input BufferedReader and split it to request method, headers and body.
+     * All of this put into curren object
+     * @param input
+     * @throws IOException
+     */
     public void readData(BufferedReader input) throws IOException {
         String line = input.readLine();
         if (!line.equals("")) {
@@ -73,6 +96,8 @@ public class HttpData {
     public Map<String, String> splitRequest(String request) {
         Map<String, String> result = new HashMap<>();
         int startPos = request.indexOf("/");
+        if (startPos < 0)
+            startPos = request.indexOf("?");
         int endPos = request.lastIndexOf(" ");
         if (startPos < 0 || endPos < 0) {
             result.put("", "");
@@ -101,7 +126,9 @@ public class HttpData {
             sb.append(param);
             idx++;
         }
-        return (httpData.getHttpMethod() + " /?" + sb.toString() + " HTTP/1.1");
+        if (sb.length() == 0)
+            return ("");
+        return ("?" + sb.toString());
     }
 
     @Override
