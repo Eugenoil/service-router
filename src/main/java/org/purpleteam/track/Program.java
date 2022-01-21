@@ -1,16 +1,20 @@
 package org.purpleteam.track;
 
+import java.util.List;
+
 public class Program {
 
     public static void main(String[] args) throws Exception {
-        RequestListener rs = new RequestListener("serviceAccountant");
+        HttpListener rs = new HttpListener();
         System.out.println("Service listener started");
-        String request;
+        HttpData request;
         while (true) {
             request = rs.listen();
             // some operation with request
             System.out.println(request);
-            rs.sendResponse("<p>Hello!</p>");
+            HttpData httpData = new HttpData();
+            httpData.setBody("<p>Hello!</p>");
+            rs.sendResponse(httpData);
         }
     }
 }
