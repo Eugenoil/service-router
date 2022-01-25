@@ -1,0 +1,20 @@
+{
+    "ok": true,
+    "result": {
+        "message_id": 1312,
+        "from": {
+            "id": 5033438618,
+            "is_bot": true,
+            "first_name": "Andersen_tracking",
+            "username": "Andersen_tracking_bot"
+        },
+        "chat": {
+            "id": 436889471,
+            "first_name": "st1ch123",
+            "username": "st1ch123",
+            "type": "private"
+        },
+        "date": 1643010509,
+        "text": "текст юзера"
+    }
+}

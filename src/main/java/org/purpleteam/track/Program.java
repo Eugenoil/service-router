@@ -1,5 +1,15 @@
 package org.purpleteam.track;
 
+import org.apache.commons.io.FileUtils;
+import org.json.JSONObject;
+import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+
+import java.io.File;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
+
 public class Program {
     /***
      * Example of creating listening server. Var <request> receive HttpData which contains
@@ -45,8 +55,52 @@ public class Program {
         System.out.println(new HttpSender().sendRequestInUrl(httpData));
     }
 
+    /***
+     * Example of using and modifying SOAP
+     * @param soap string contents of SOAP(XML)
+     */
+    public static void string2Xml(String soap) throws Exception {
+        FormatUtils fu = new FormatUtils();
+        Document root = (Document) fu.string2XML(soap);
+        Node test = fu.findNode(root, "symbol", true);
+        Node parentNode = test.getParentNode();
+        parentNode.removeChild(test);
+        for (int i = 0; i < 5; i++) {
+            Node newNode = test.cloneNode(true);
+            newNode.setTextContent("" + i);
+            parentNode.appendChild(newNode);
+        }
+        System.out.println(fu.xml2String(root));
+    }
+
+    public static void xml2json(String soap) {
+        FormatUtils fu = new FormatUtils();
+        JSONObject json = fu.xml2Json(soap);
+        Object item = fu.findData(json, "symbol", false);
+        if (item instanceof String)
+            System.out.println(item);
+        System.out.println(json);
+    }
+
     public static void main(String[] args) throws Exception {
-        sendHttpData();
+//        sendHttpData();
 //        listen();
+        StringBuilder sb = new StringBuilder();
+        sb.append("<?xml version=\"1.0\" encoding=\"UTF-8\"?>")
+            .append("<SOAP-ENV:Envelope xmlns:SOAP-ENV=\"http://schemas.xmlsoap.org/soap/envelope/\">")
+            .append("<SOAP-ENV:Body>")
+            .append("<ns0:GetUserIdList>")
+                .append("<symbol>ALL</symbol>")
+            .append("</ns0:GetUserIdList>")
+            .append("</SOAP-ENV:Body>")
+            .append("</SOAP-ENV:Envelope>");
+        string2Xml(sb.toString());
+//        xml2json(sb.toString());
+
+//        String rootPath = Thread.currentThread().getContextClassLoader().getResource("").getPath();
+//        File file = new File(rootPath + "jsonfile.txt");
+//        String tmp = FileUtils.readFileToString(file, StandardCharsets.UTF_8);
+//        ServiceRouter sr = new ServiceRouter();
+//        System.out.println(sr.makeTelegramResponse(tmp));
     }
 }

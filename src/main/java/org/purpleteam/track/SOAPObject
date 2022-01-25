@@ -1,0 +1,306 @@
+import org.apache.commons.io.IOUtils;
+import org.w3c.dom.*;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedList;
+import java.util.List;
+
+public class SOAPObject {
+    private List<SOAPObject> children;
+    private SOAPObject parent;
+    private SOAPObject next;
+    private SOAPObject previous;
+    private SOAPObject root;
+    private String name;
+    private String nameSpace;
+    private Long longVal;
+    private Integer intVal;
+    private String stringVal;
+    private short classType =-1;
+    private String source;
+    private Document document;
+
+    public SOAPObject(String source) {
+        children = new LinkedList<>();
+        this.source = source;
+        try {
+            DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
+            DocumentBuilder db = dbf.newDocumentBuilder();
+            document = db.parse(IOUtils.toInputStream(source, StandardCharsets.UTF_8));
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getType() {
+        switch (classType) {
+            case 0: return "String";
+            case 1: return "Integer";
+            case 2: return "Long";
+        }
+        return "None";
+    }
+
+    private SOAPObject getRoot() {
+        return root;
+    }
+
+    private void setRoot(SOAPObject root) {
+        this.root = root;
+        if (this.children.size() > 0)
+            for (SOAPObject childNode : children)
+                childNode.setRoot(root);
+    }
+
+    public SOAPObject find(SOAPObject node) {
+        if (this == node)
+            return this;
+        if (children.size() == 0)
+            return null;
+        SOAPObject result = null;
+        for (SOAPObject childNode : children) {
+            if (childNode == node)
+                result = childNode;
+            if (null == result && children.size() > 0) {
+                assert childNode != null;
+                result = childNode.find(node);
+            }
+            if (null != result)
+                return result;
+        }
+        return null;
+    }
+
+    /***
+     * Recursive search inside tree of children SOAPObjects item with the same <name> and in dependence of
+     * value <partial> check full equal or part equal of item name
+     * @param name text to compare items name to
+     * @param partial how to compare: full equality (false) or not (true)
+     * @return found SOAPObject or NULL if not found
+     */
+    public SOAPObject find(String name, boolean partial) {
+        if ((partial && this.name.contains(name)) ||
+                (!partial && this.name.equals(name)))
+            return this;
+        if (children.size() == 0)
+            return null;
+        SOAPObject result = null;
+        for (SOAPObject childNode : children) {
+            if ((partial && childNode.name.contains(name)) ||
+                    (!partial && childNode.name.equals(name)))
+                result = childNode;
+            if (null == result && children.size() > 0)
+                result = childNode.find(name, partial);
+            if (null != result)
+                return result;
+        }
+        return null;
+    }
+
+    private boolean isNumber(String value) {
+        if (null == value)
+            return false;
+        String available = "+-0123456789.,";
+        for (int i = 0; i < value.length(); i++)
+            if (available.indexOf(value.charAt(i)) == -1)
+                return false;
+        return true;
+    }
+
+    public Node findNode(Node startFrom, String name, boolean partial) {
+        if ((partial && startFrom.getNodeName().contains(name)) ||
+                (!partial && startFrom.getNodeName().equals(name)))
+            return startFrom;
+        NodeList children = startFrom.getChildNodes();
+        if (children.getLength() == 0)
+            return null;
+        Node result = null;
+        for (int i = 0; i < children.getLength(); i++) {
+            if ((partial && children.item(i).getNodeName().contains(name)) ||
+                    (!partial && children.item(i).getNodeName().equals(name)))
+                result = children.item(i);
+            if (null == result && children.item(i).hasChildNodes())
+                result = findNode(children.item(i), name, partial);
+            if (null != result)
+                return result;
+        }
+        return null;
+    }
+
+    public SOAPObject parseNode(Node node) {
+        SOAPObject result = new SOAPObject("");
+        result.name = node.getNodeName();
+        result.classType = node.getNodeType();
+        result.stringVal = node.getNodeValue();
+        if (isNumber(result.stringVal)) {
+            try {
+                result.intVal = Integer.parseInt(node.getNodeValue());
+                result.longVal = Long.parseLong(node.getNodeValue());
+            } catch (Exception ex) {
+                System.out.println(ex.getMessage());
+            }
+        }
+        if (node.hasChildNodes()) {
+            NodeList childNodes = node.getChildNodes();
+            for (int i = 0; i < childNodes.getLength(); i++)
+                this.children.add(parseNode(childNodes.item(i)));
+        }
+        return result;
+    }
+
+    public void parse() {
+        if (null != this.previous) {
+            System.out.println("Can not parse source when you not in root!");
+            return;
+        }
+        try {
+            Node body = findNode(document, "SOAP-ENV:Body", false);
+            if (null == body || !body.hasChildNodes())
+                return ;
+            NodeList bodyItems = body.getChildNodes();
+            SOAPObject prevNode = this;
+            SOAPObject nextNode;
+            for (int i = 0; i < bodyItems.getLength(); i++) {
+                nextNode = parseNode(bodyItems.item(i));
+                if (nextNode != null) {
+                    prevNode.next = nextNode;
+                    nextNode.previous = prevNode;
+                    prevNode = nextNode;
+                }
+            }
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
+
+    public String getString() {
+        return stringVal;
+    }
+
+    public Integer getInteger() {
+        return intVal;
+    }
+
+    public Long getLong() {
+        return longVal;
+    }
+
+    public void setString(String s) {
+        stringVal = s;
+    }
+
+    public void setInteger(Integer i) {
+        intVal = i;
+    }
+
+    public void setLong(Long l) {
+        longVal = l;
+    }
+
+    public short getNodeType() {
+        return classType;
+    }
+
+    public SOAPObject getParentNode() {
+        return parent;
+    }
+
+    public SOAPObject getNext() {
+        return next;
+    }
+
+    public SOAPObject getPrevoius() {
+        return previous;
+    }
+
+    public List<SOAPObject> getChildNodes() {
+        return children;
+    }
+
+    public SOAPObject getFirstChild() {
+        if (children.size() > 0)
+            return children.get(0);
+        return null;
+    }
+
+    public SOAPObject getLastChild() {
+        if (children.size() > 0)
+            return children.get(children.size() - 1);
+        return null;
+    }
+
+    public SOAPObject insertBefore(SOAPObject node) {
+        SOAPObject tmpNode = this.previous;
+        if (null == tmpNode) {
+            this.previous = node;
+            node.next = this;
+            setRoot(node);
+        } else {
+           node.next = this;
+           node.previous = this.previous;
+           this.previous = node;
+        }
+        return node;
+    }
+
+    public SOAPObject insertAfter(SOAPObject node) {
+        SOAPObject tmpNode = this.next;
+        if (null == tmpNode) {
+            this.next = node;
+            node.previous = this;
+        } else {
+            node.previous = this;
+            node.next = this.next;
+            this.next = node;
+        }
+        return node;
+    }
+
+    public void appendChild(SOAPObject node) {
+        this.children.add(node);
+    }
+
+    public boolean hasChild() {
+        return children.size() > 0;
+    }
+
+    public String getNamespace() {
+        return nameSpace;
+    }
+
+    public void setNamespace(String nameSpace) {
+        this.nameSpace = nameSpace;
+    }
+
+    public Document getDocument() {
+        return document;
+    }
+
+    @Override
+    public String toString() {
+        return stringVal;
+//        return "SOAPObject{" +
+//                "children=" + children +
+//                ", parent=" + parent +
+//                ", next=" + next +
+//                ", previous=" + previous +
+//                ", root=" + root +
+//                ", name='" + name + '\'' +
+//                ", nameSpace='" + nameSpace + '\'' +
+//                ", longVal=" + longVal +
+//                ", intVal=" + intVal +
+//                ", stringVal='" + stringVal + '\'' +
+//                ", classType=" + classType +
+//                '}';
+    }
+}
